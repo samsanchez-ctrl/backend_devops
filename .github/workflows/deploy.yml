@@ -1,0 +1,49 @@
+name: Deploy Backend
+on:
+  push:
+    branches: [ "deploy" ]
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: samsanchezctrl
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: samsanchezctrl/backend-perritos:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Private EC2 via SSH Proxy
+        uses: appleboy/ssh-action@master
+        with:
+          host: 10.0.142.98            # IP Privada App
+          username: ec2-user
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # FRONTEND COMO PUENTE PARA QUE GITHUB ACCEDA A APP:
+          proxy_host: 18.209.107.114 # IP pública de Web
+          proxy_username: ec2-user
+          proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            sudo docker pull samsanchezctrl/backend-perritos:latest
+            sudo docker stop backend || true
+            sudo docker rm backend || true
+            sudo docker run -d --name backend -p 3001:3001 \
+            -e DB_HOST=<IP_PRIVADA_DATA> \
+            -e DB_USER=alumno \
+            -e DB_PASSWORD=alumno123 \
+            -e DB_NAME=tienda_perritos \
+            samsanchezctrl/backend-perritos:latest
