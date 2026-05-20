@@ -13,7 +13,7 @@ jobs:
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
-          username: samsanchezctrl
+          username: samsanchez-ctrl
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push
@@ -21,7 +21,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: samsanchezctrl/backend-perritos:latest
+          tags: samsanchez-ctrl/backend_devops:latest
 
   deploy:
     needs: build-and-push
@@ -30,20 +30,20 @@ jobs:
       - name: Deploy to Private EC2 via SSH Proxy
         uses: appleboy/ssh-action@master
         with:
-          host: 10.0.142.98            # IP Privada App
+          host: 10.0.137.129            # IP Privada App
           username: ec2-user
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           # FRONTEND COMO PUENTE PARA QUE GITHUB ACCEDA A APP:
-          proxy_host: 18.209.107.114 # IP pública de Web
+          proxy_host: 13.218.146.246 # IP pública de Web
           proxy_username: ec2-user
           proxy_key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            sudo docker pull samsanchezctrl/backend-perritos:latest
+            sudo docker pull samsanchez-ctrl/backend_devops:latest
             sudo docker stop backend || true
             sudo docker rm backend || true
             sudo docker run -d --name backend -p 3001:3001 \
-            -e DB_HOST=<IP_PRIVADA_DATA> \
+            -e DB_HOST=10.0.153.106 \
             -e DB_USER=alumno \
             -e DB_PASSWORD=alumno123 \
             -e DB_NAME=tienda_perritos \
-            samsanchezctrl/backend-perritos:latest
+            samsanchez-ctrl/backend_devops:latest
