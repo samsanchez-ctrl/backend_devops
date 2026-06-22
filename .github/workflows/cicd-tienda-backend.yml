@@ -26,7 +26,7 @@ jobs:
 
     - name: Build imagen Backend y push a ECR
       run: |
-        cd backend
+        cd backend_devops
         docker build -t tienda-backend .
         docker tag tienda-backend:latest ${{ secrets.ECR_REPO_URL_BACKEND }}:latest
         docker push ${{ secrets.ECR_REPO_URL_BACKEND }}:latest
