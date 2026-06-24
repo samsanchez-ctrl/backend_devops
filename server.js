@@ -49,7 +49,7 @@ app.get("/api/productos", async (req, res) => {
     const [rows] = await pool.query("SELECT id, nombre, descripcion, precio, stock FROM productos ORDER BY id DESC");
     res.json(rows);
   } catch (err) {
-    handleError(res, err, "No se pudieron obtener los productos.");
+    handleError(res, err, "No se pudieron obtener los productos, intentalo nuevamente.");
   }
 });
 
